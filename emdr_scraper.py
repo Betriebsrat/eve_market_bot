@@ -3,6 +3,7 @@ import zmq
 import simplejson
 import time
 from pymongo import MongoClient
+from datetime import datetime
 
 def main():
     context = zmq.Context()
@@ -25,12 +26,15 @@ def main():
             market_json = zlib.decompress(subscriber.recv())
             # Un-serialize the JSON data to a Python dict.
             market_data = simplejson.loads(market_json)
-            if market_data["resultType"] == "order":
+            market_data["currentTime"] = datetime.strptime(market_data["currentTime"].split("+")[0],
+                                                           "%Y-%m-%dT%H:%M:%S")
+            if market_data["resultType"] == "orders":
                 o_col.insert(market_data)
             if market_data["resultType"] == "history":
                 h_col.insert(market_data)
             print market_data["resultType"]
-        except:
+        except Exception as e:
+            print e
             time.sleep(30)
 
 if __name__ == '__main__':
