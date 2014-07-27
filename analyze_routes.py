@@ -3,6 +3,19 @@ import numpy
 import heapq
 
 
+def getTopSSID(data, limit):
+    """gets the top limited number of ids"""
+
+    ss_ids = data["solarSystemID"].unique()
+    types = []
+    ln_ss = len(ss_ids)
+    for i, s in enumerate(ss_ids):
+        types.append(len(data[data["solarSystemID"] == s]["typeID"].unique()))
+        print (i * 100.) / ln_ss, i, ln_ss
+    max_l = heapq.nlargest(limit, types)
+    return [ss_ids[max_l.index(m)] for m in max_l], max_l
+
+
 def marketVolume(data, type_ids, buy=1):
     """gets the volume for the data"""
 
@@ -57,6 +70,9 @@ def compareGoods(b_start_samples, b_start_vol, s_start_samples,
         # s_diff = s_start_samples[i] - b_start_samples[i]
         # f_diff = s_finish_samples[i] - b_finish_samples[i]
         # fs_diff = s_finish_samples[i] - b_start_samples[i]
+        # Right now this works by taking the difference between the amount
+        # you could see in one station vs the other over the sell price
+        # in the original station, this is just the "returns"
         if b_finish_vol[i] > vol_limit:
             mu.append(((s_finish_samples[i] - s_start_samples[i]) / s_start_samples[i]).mean())
             r_type_ids.append(type_ids[i])
@@ -84,6 +100,7 @@ def optimalRoute(start, finish, data, good_num, vol_limit,
     # get datasets that contain the correct ids
     start_d = start_d[start_d["typeID"].isin(type_ids)]
     finish_d = finish_d[finish_d["typeID"].isin(type_ids)]
+    print len(type_ids)
 
     # get the samples for the market price
     b_start_samples = marketSampler(start_d, type_ids)
