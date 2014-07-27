@@ -14,7 +14,7 @@ def extractor(t_delta):
 
     var = ["regionID", "typeID", "price", "volRemaining", "range", "orderID",
            "volEntered", "minVolumne", "bid", "issueDate", "duration",
-           "statinoID", "solarSystemID"]
+           "stationID", "solarSystemID"]
 
     for c in col.find({"currentTime": {"$gt": datetime.now() + t_delta}}):
         for rs in c["rowsets"]:

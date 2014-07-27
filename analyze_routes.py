@@ -1,14 +1,33 @@
 import pandas
+import numpy
 import heapq
 
-def marketVolume(data, buy=1)
+
+def marketVolume(data, buy=1):
     """gets the volume for the data"""
 
     vol_l = []
     order_data = data[data["bid"] == buy]
-    for g in order_data["type_id"].unique():
-        vol_l.append(order_data[order_data["type_id"] == g]["volRemaining"].sum())
+    for g in order_data["typeID"].unique():
+        vol_l.append(order_data[order_data["typeID"] == g]["volRemaining"].sum())
     return vol_l
+
+
+def genMeanSamp(data):
+    """generates normal samples for the mean of the data subset"""
+
+    mn_vol = (data["volRemaining"] * data["price"]).mean()
+    return numpy.random.normal(mn_vol, 10, 1000)
+
+
+def marketSampler(data, buy=1):
+    """does a sample for the mean"""
+
+    samp_l = []
+    order_data = data[data["bid"] == buy]
+    for g in order_data["typeID"].unique():
+        samp_l.append(genMeanSamp(order_data[order_data["typeID"] == g]))
+    return samp_l
 
 
 def compareGoods(b_start_samples, b_start_vol, s_start_samples,
@@ -28,7 +47,7 @@ def compareGoods(b_start_samples, b_start_vol, s_start_samples,
 
     mu = []
 
-    for i in range(len(b_start_samples)):
+    for i in range(len(s_start_samples)):
         
         # NOTE: these are not necessary for the way I'm doing it
         # if however you wanted to compare the s_diff with f_diff
@@ -37,7 +56,9 @@ def compareGoods(b_start_samples, b_start_vol, s_start_samples,
         # s_diff = s_start_samples[i] - b_start_samples[i]
         # f_diff = s_finish_samples[i] - b_finish_samples[i]
         # fs_diff = s_finish_samples[i] - b_start_samples[i]
-        if b_finish_vol[i] > vol_limit:
+        # the s needs to be replaced with a b but I just want the code
+        # to work first
+        if s_finish_vol[i] > vol_limit:
             mu.append((s_finish_samples[i] - s_start_samples[i]).mean())
 
     return heapq.nlargest(good_num, mu)
@@ -51,6 +72,17 @@ def optimalRoute(start, finish, data, good_num, vol_limit,
     # get the data subsets
     start_d = data[data[id_type] == start]
     finish_d = data[data[id_type] == finish]
+
+    # builds the unique type id
+    t_s_s = set(start_d[start_d["bid"] == 0]["typeID"].unique())
+    t_s_b = set(start_d[start_d["bid"] == 1]["typeID"].unique())
+    t_f_s = set(finish_d[finish_d["bid"] == 0]["typeID"].unique())
+    t_f_b = set(finish_d[finish_d["bid"] == 1]["typeID"].unique())
+    u_t_ids = list(t_s_s.intersection(t_s_b).intersection(t_f_s).intersection(t_f_b))
+
+    # get datasets that contain the correct ids
+    start_d = start_d[start_d["typeID"].isin(u_t_ids)]
+    finish_d = finish_d[finish_d["typeID"].isin(u_t_ids)]
 
     # get the samples for the market price
     b_start_samples = marketSampler(start_d)
@@ -81,6 +113,7 @@ def compareRoutes(data, route_num, good_num, vol_limit,
         for f in data[id_type].unique():
             routes.append(optimalRoute(s, f, data, good_num, vol_limit,
                                        id_type))
+            print s, f
 
     routes = [sum(r) for r in routes]
     return heapq.nlargest(route_num, routes)
