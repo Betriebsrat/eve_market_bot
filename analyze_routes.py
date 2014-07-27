@@ -3,12 +3,12 @@ import numpy
 import heapq
 
 
-def marketVolume(data, buy=1):
+def marketVolume(data, type_ids, buy=1):
     """gets the volume for the data"""
 
     vol_l = []
     order_data = data[data["bid"] == buy]
-    for g in order_data["typeID"].unique():
+    for g in type_ids:
         vol_l.append(order_data[order_data["typeID"] == g]["volRemaining"].sum())
     return vol_l
 
@@ -16,23 +16,23 @@ def marketVolume(data, buy=1):
 def genMeanSamp(data):
     """generates normal samples for the mean of the data subset"""
 
-    mn_vol = (data["volRemaining"] * data["price"]).mean()
-    return numpy.random.normal(mn_vol, 10, 1000)
+    return numpy.random.normal(data["price"].mean(), 10, 1000)
 
 
-def marketSampler(data, buy=1):
+def marketSampler(data, type_ids, buy=1):
     """does a sample for the mean"""
 
     samp_l = []
     order_data = data[data["bid"] == buy]
-    for g in order_data["typeID"].unique():
+    for g in type_ids:
         samp_l.append(genMeanSamp(order_data[order_data["typeID"] == g]))
     return samp_l
 
 
 def compareGoods(b_start_samples, b_start_vol, s_start_samples,
                  s_start_vol, b_finish_samples, b_finish_vol,
-                 s_finish_samples, s_finish_vol, vol_limit, good_num):
+                 s_finish_samples, s_finish_vol, vol_limit, good_num,
+                 type_ids):
     """returns the maximum return goods
     
     NOTE: This currently only takes into account the mean I would
@@ -46,6 +46,7 @@ def compareGoods(b_start_samples, b_start_vol, s_start_samples,
     """
 
     mu = []
+    r_type_ids = []
 
     for i in range(len(s_start_samples)):
         
@@ -56,12 +57,12 @@ def compareGoods(b_start_samples, b_start_vol, s_start_samples,
         # s_diff = s_start_samples[i] - b_start_samples[i]
         # f_diff = s_finish_samples[i] - b_finish_samples[i]
         # fs_diff = s_finish_samples[i] - b_start_samples[i]
-        # the s needs to be replaced with a b but I just want the code
-        # to work first
-        if s_finish_vol[i] > vol_limit:
-            mu.append((s_finish_samples[i] - s_start_samples[i]).mean())
+        if b_finish_vol[i] > vol_limit:
+            mu.append(((s_finish_samples[i] - s_start_samples[i]) / s_start_samples[i]).mean())
+            r_type_ids.append(type_ids[i])
 
-    return heapq.nlargest(good_num, mu)
+    max_l = heapq.nlargest(good_num, mu)
+    return [r_type_ids[max_l.index(m)] for m in max_l], max_l
 
 
 def optimalRoute(start, finish, data, good_num, vol_limit,
@@ -78,30 +79,30 @@ def optimalRoute(start, finish, data, good_num, vol_limit,
     t_s_b = set(start_d[start_d["bid"] == 1]["typeID"].unique())
     t_f_s = set(finish_d[finish_d["bid"] == 0]["typeID"].unique())
     t_f_b = set(finish_d[finish_d["bid"] == 1]["typeID"].unique())
-    u_t_ids = list(t_s_s.intersection(t_s_b).intersection(t_f_s).intersection(t_f_b))
+    type_ids = list(t_s_s.intersection(t_s_b).intersection(t_f_s).intersection(t_f_b))
 
     # get datasets that contain the correct ids
-    start_d = start_d[start_d["typeID"].isin(u_t_ids)]
-    finish_d = finish_d[finish_d["typeID"].isin(u_t_ids)]
+    start_d = start_d[start_d["typeID"].isin(type_ids)]
+    finish_d = finish_d[finish_d["typeID"].isin(type_ids)]
 
     # get the samples for the market price
-    b_start_samples = marketSampler(start_d)
-    b_finish_samples = marketSampler(finish_d)
-    s_start_samples = marketSampler(start_d, 0)
-    s_finish_samples = marketSampler(finish_d, 0)
+    b_start_samples = marketSampler(start_d, type_ids)
+    b_finish_samples = marketSampler(finish_d, type_ids)
+    s_start_samples = marketSampler(start_d, type_ids, 0)
+    s_finish_samples = marketSampler(finish_d, type_ids, 0)
 
     # get the volume
-    b_start_vol = marketVolume(start_d)
-    b_finish_vol = marketVolume(finish_d)
-    s_start_vol = marketVolume(start_d, 0)
-    s_finish_vol = marketVolume(finish_d, 0)
+    b_start_vol = marketVolume(start_d, type_ids)
+    b_finish_vol = marketVolume(finish_d, type_ids)
+    s_start_vol = marketVolume(start_d, type_ids, 0)
+    s_finish_vol = marketVolume(finish_d, type_ids, 0)
 
     # get the highest earning goods above a certain volume
     return compareGoods(b_start_samples, b_start_vol,
                         s_start_samples, s_start_vol,
                         b_finish_samples, b_finish_vol,
                         s_finish_samples, s_finish_vol,
-                        vol_limit, good_num)
+                        vol_limit, good_num, type_ids)
 
 
 def compareRoutes(data, route_num, good_num, vol_limit,
