@@ -81,6 +81,46 @@ def compareGoods(b_start_samples, b_start_vol, s_start_samples,
     return [r_type_ids[max_l.index(m)] for m in max_l], max_l
 
 
+def naiveCompare(start_d, finish_d, type_ids, good_num):
+    """gets the naive values here"""
+
+    output = []
+    o_start_d = start_d[start_d["bid"] == 0]
+    o_finish_d = finish_d[finish_d["bid"] == 0]
+    ln = len(type_ids)
+    for i, g in enumerate(type_ids):
+        s_m = o_start_d[o_start_d["typeID"] == g]["price"].mean()
+        f_m = o_finish_d[o_finish_d["typeID"] == g]["price"].mean()
+        output.append((f_m - s_m) / s_m)
+        print (i * 100.) / ln
+
+    max_l = heapq.nlargest(good_num, output)
+    return [type_ids[max_l.index(m)] for m in max_l], max_l
+
+
+def naiveOptimalRoute(start, finish, data, good_num, vol_limit,
+                      id_type="solarSystemID"):
+    """gets a more naive estimate"""
+
+    # get teh data subsets
+    start_d = data[data[id_type] == start]
+    finish_d = data[data[id_type] == finish]
+
+    # builds the unique type id
+    t_s_s = set(start_d[start_d["bid"] == 0]["typeID"].unique())
+    t_s_b = set(start_d[start_d["bid"] == 1]["typeID"].unique())
+    t_f_s = set(finish_d[finish_d["bid"] == 0]["typeID"].unique())
+    t_f_b = set(finish_d[finish_d["bid"] == 1]["typeID"].unique())
+    type_ids = list(t_s_s.intersection(t_s_b).intersection(t_f_s).intersection(t_f_b))
+
+    # get datasets that contain the correct ids
+    start_d = start_d[start_d["typeID"].isin(type_ids)]
+    finish_d = finish_d[finish_d["typeID"].isin(type_ids)]
+
+    return naiveCompare(start_d, finish_d, type_ids, good_num)
+
+
+
 def optimalRoute(start, finish, data, good_num, vol_limit,
                  id_type="solarSystemID"):
     """determines the optimal portfolio of goods to ship from start to
@@ -100,7 +140,6 @@ def optimalRoute(start, finish, data, good_num, vol_limit,
     # get datasets that contain the correct ids
     start_d = start_d[start_d["typeID"].isin(type_ids)]
     finish_d = finish_d[finish_d["typeID"].isin(type_ids)]
-    print len(type_ids)
 
     # get the samples for the market price
     b_start_samples = marketSampler(start_d, type_ids)
