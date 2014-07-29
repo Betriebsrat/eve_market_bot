@@ -81,7 +81,7 @@ def optimalRoute(start, finish, data, good_num, vol_limit,
     start_d = start_d[start_d["typeID"].isin(type_ids)]
     finish_d = finish_d[finish_d["typeID"].isin(type_ids)]
 
-    return compareGoods(start_d, finish_d, type_ids, good_num, vol_limit
+    return compareGoods(start_d, finish_d, type_ids, good_num, vol_limit,
                         ind_i, ind_j, route_num, t_1)
 
 
