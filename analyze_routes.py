@@ -104,7 +104,7 @@ def compareRoutes(data, route_num, good_num, vol_limit,
                 goods = optimalRoute(s, f, data, good_num, vol_limit,
                                      i, j, route_num, t_1, id_type)
                 routes[s][f] = {}
-                for i, v in goods:
+                for i, v in zip(goods[0], goods[1]):
                     routes[s][f][i] = v
     return routes
 
