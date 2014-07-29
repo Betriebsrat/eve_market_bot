@@ -87,12 +87,13 @@ def optimalRoute(start, finish, data, good_num, vol_limit,
 
 
 def compareRoutes(data, route_num, good_num, vol_limit,
-                  id_type="solarSystemID"):
+                  top_ssids=None, id_type="solarSystemID"):
     """will find the routes that are the most profitable"""
 
     routes = {}
 
-    top_ssids = getTopSSID(data, route_num)
+    if top_ssids is None:
+        top_ssids = getTopSSID(data, route_num)
 
     t_1 = datetime.now()
 
