@@ -32,7 +32,7 @@ def getProfits(finish, start):
     return (finish - start) / start
 
 
-def getVolume(finish, t, bid):
+def getVolume(data, t, bid):
     """gets the volume for the goods being bought in finish"""
 
     return data[data["typeID"] == t][data["bid"] == bid]["volRemaining"].sum()
@@ -106,6 +106,18 @@ def compareRoutes(data, route_num, good_num, vol_limit,
                 for i, v in goods:
                     routes[s][f][i] = v
     return routes
+
+
+def getBestRoutes(routes, lower_limit):
+    """gets the best routes above a certain return"""
+
+    good_routes = []
+    for s in routes:
+        for f in routes[s]:
+            for i in routes[s][f]:
+                if routes[s][f][i] > lower_limit:
+                    good_routes.append((s, f, i))
+    return good_routes
 
 
 def mapNames(routes, loc_links, type_links):

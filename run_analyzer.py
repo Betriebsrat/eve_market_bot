@@ -10,9 +10,13 @@ route_num = int(sys.argv[3])
 good_num = int(sys.argv[4])
 vol_limit = int(sys.argv[5])
 t_delta = -int(sys.argv[6])
+lower_limit = float(sys.argv[7])
 
 
 os.chdir(dr)
 data = extractor(t_delta)
 routes = compareRoute(data, route_num, good_num, vol_limit)
 storeRoutes(routes, routes_f)
+
+
+good_routes = getBestRoutes(routes, lower_limit)
