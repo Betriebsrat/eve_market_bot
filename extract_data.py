@@ -17,7 +17,7 @@ def extractor(t_delta):
            "stationID", "solarSystemID"]
 
     # prep to check status
-    ln = col.count({"currentTime": {"$gt": datetime.now() + t_delta}})
+    ln = col.count()
     i = 0
     t_1 = datetime.now()
 
@@ -28,5 +28,6 @@ def extractor(t_delta):
             for r in rs["rows"]:
                 output.append([r_id, t_id] + r)
         print (i * 100.) / ln, datetime.now() - t_1
+        i += 1
 
     return pandas.DataFrame(output, columns=var) 
