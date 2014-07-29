@@ -17,7 +17,7 @@ def extractor(t_delta):
            "stationID", "solarSystemID"]
 
     # prep to check status
-    ln = col.count()
+    ln = col.count({"currentTime": {"$gt": datetime.now() + t_delta}})
     i = 0
     t_1 = datetime.now()
 
