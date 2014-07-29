@@ -1,4 +1,5 @@
 from datetime import datetime
+import cPickle
 import pandas
 import numpy
 import heapq
@@ -101,5 +102,30 @@ def compareRoutes(data, route_num, good_num, vol_limit,
             if i != j:
                 goods = optimalRoute(s, f, data, good_num, vol_limit,
                                      i, j, route_num, t_1, id_type)
-                routes[s][f] = goods
-    return routes 
+                routes[s][f] = {}
+                for i, v in goods:
+                    routes[s][f][i] = v
+    return routes
+
+
+def mapNames(routes, name_links):
+    """builds a new dictionary of routes that use names in place
+    of ids, this makes it easier to read"""
+
+    n_routes = {}
+    for s in routes:
+        s_n = name_links[s]
+        n_routes[s_n] = {}
+        for f in routes[s]:
+            f_n = name_links[f]
+            n_routes[s_n][f_n] = {}
+            for i in routes[s][f]:
+                i_n = name_links[i]
+                n_routes[s_n][f_n][i_n] = routes[s][f][i]
+    return n_routes
+
+
+def storeRoutes(routes, routes_F):
+    """stores the routes in the route file"""
+
+    cPickle.dump(routes, open(routes_f, "wb"))
