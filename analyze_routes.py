@@ -17,7 +17,7 @@ def getTopSSID(data, limit):
         types.append(len(data[data["solarSystemID"] == s]["typeID"].unique()))
         print (i * 100.) / ln_ss, datetime.now() - t_1, "top SS IDs"
     max_l = heapq.nlargest(limit, types)
-    return [ss_ids[max_l.index(m)] for m in max_l], max_l
+    return [ss_ids[max_l.index(m)] for m in max_l]
 
 
 def getPriceEstimate(data, t, bid):
@@ -108,7 +108,7 @@ def compareRoutes(data, route_num, good_num, vol_limit,
     return routes
 
 
-def mapNames(routes, name_links):
+def mapNames(routes, loc_links, type_links):
     """builds a new dictionary of routes that use names in place
     of ids, this makes it easier to read"""
 
@@ -120,7 +120,7 @@ def mapNames(routes, name_links):
             f_n = name_links[f]
             n_routes[s_n][f_n] = {}
             for i in routes[s][f]:
-                i_n = name_links[i]
+                i_n = type_links[i]
                 n_routes[s_n][f_n][i_n] = routes[s][f][i]
     return n_routes
 
