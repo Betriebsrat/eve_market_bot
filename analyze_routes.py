@@ -53,7 +53,7 @@ def compareGoods(start_d, finish_d, type_ids, good_num, vol_limit, ind_i,
         if getVolume(finish_d, t, 1) > vol_limit: 
             output.append(getProfits(f_m, s_m))
             ids.append(t)
-        print (i * 100.) / ln, datetime.now() - t_1, ind_i, ind_j
+        print (i * 100.) / ln, datetime.now() - t_1, ((ind_i * route_num + ind_j) * 100.) / (route_num * route_num)
     
     max_l = heapq.nlargest(good_num, output)
     return [ids[max_l.index(m)] for m in max_l], max_l
@@ -102,8 +102,8 @@ def compareRoutes(data, route_num, good_num, vol_limit,
                 goods = optimalRoute(s, f, data, good_num, vol_limit,
                                      i, j, route_num, t_1, id_type)
                 routes[s][f] = {}
-                for i, v in zip(goods[0], goods[1]):
-                    routes[s][f][i] = v
+                for k, v in zip(goods[0], goods[1]):
+                    routes[s][f][k] = v
     return routes
 
 

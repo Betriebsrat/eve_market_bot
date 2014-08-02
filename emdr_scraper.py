@@ -2,6 +2,7 @@ import zlib
 import zmq
 import simplejson
 import time
+from datetime import datetime
 from pymongo import MongoClient
 from datetime import datetime
 
@@ -18,7 +19,9 @@ def main():
     client = MongoClient()
     db = client["EveMarketDb"]
     o_col = db["OrderCollection"]
-    h_col = db["HistoryCollection"]
+
+    t_1 = datetime.now()
+    ind = 0
 
     while True:
         try:
@@ -30,12 +33,11 @@ def main():
                                                            "%Y-%m-%dT%H:%M:%S")
             if market_data["resultType"] == "orders":
                 o_col.insert(market_data)
-            if market_data["resultType"] == "history":
-                h_col.insert(market_data)
-            print market_data["resultType"]
+            print ind, datetime.now() - t_1
         except Exception as e:
             print e
             time.sleep(30)
+        ind += 1
 
 if __name__ == '__main__':
     main()
