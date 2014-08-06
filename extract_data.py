@@ -21,12 +21,17 @@ def extractor(t_delta):
     i = 0
     t_1 = datetime.now()
 
+    order_ids = []
+
     for c in col.find({"currentTime": {"$gt": datetime.now() + t_delta}}):
         for rs in c["rowsets"]:
             r_id = rs["regionID"]
             t_id = rs["typeID"]
             for r in rs["rows"]:
-                output.append([r_id, t_id] + r)
+                # don't include orders that we already have in the data
+                if r[3] not in order_ids:
+                    output.append([r_id, t_id] + r)
+                    order_ids.append(r[3])
         print (i * 100.) / ln, datetime.now() - t_1
         i += 1
 

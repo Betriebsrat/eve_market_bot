@@ -11,19 +11,27 @@ def getTopSSID(data, limit):
     t_1 = datetime.now()
 
     ss_ids = data["solarSystemID"].unique()
-    types = []
+    val_l = []
     ln_ss = len(ss_ids)
     for i, s in enumerate(ss_ids):
-        types.append(len(data[data["solarSystemID"] == s]["typeID"].unique()))
+        # we only want to keep solar systems that have a lot of "value" passing through them
+        # value is just defined as price times quantity.  So basically I want the solar systems
+        # that have the most money in them currently
+        ss_data = data[data["solarSystemID"] == s]
+        val = ss_data["volRemaining"] * ss_data["price"]
+        val_l.append(val.sum())
         print (i * 100.) / ln_ss, datetime.now() - t_1, "top SS IDs"
-    max_l = heapq.nlargest(limit, types)
+    max_l = heapq.nlargest(limit, vol)
     return [ss_ids[max_l.index(m)] for m in max_l]
 
 
 def getPriceEstimate(data, t, bid):
     """generates the price estimate given the data"""
 
-    return data[data["typeID"] == t][data["bid"] == bid]["price"].mean()
+    s_data = data[data["typeID"] == t][data["bid"] == bid]
+    # throw out data that is greater than two standard deviations away from the mean
+    s_data = s_data[abs(s_data["price"] - s_data["price"].mean()) < (2 * s_data["price"].std())]
+    return s_data["price"].mean()
 
 
 def getProfits(finish, start):
