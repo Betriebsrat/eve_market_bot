@@ -115,7 +115,7 @@ def getBestRoutes(routes, lower_limit):
         for f in routes[s]:
             for i in routes[s][f]:
                 if routes[s][f][i] > lower_limit:
-                    good_routes.append((s, f, i))
+                    good_routes.append((s, f, routes[s][f][i], i))
     return good_routes
 
 
