@@ -21,7 +21,7 @@ def getTopSSID(data, limit):
         val = ss_data["volRemaining"] * ss_data["price"]
         val_l.append(val.sum())
         print (i * 100.) / ln_ss, datetime.now() - t_1, "top SS IDs"
-    max_l = heapq.nlargest(limit, vol)
+    max_l = heapq.nlargest(limit, val_l)
     return [ss_ids[max_l.index(m)] for m in max_l]
 
 

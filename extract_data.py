@@ -66,6 +66,6 @@ def dataDumpExtractor(s_date, e_date):
                                         "reportedtime": "reportedTime"})
         t_data["issueDate"] = pandas.to_datetime(t_data["issueDate"])
         t_data["reportedTime"] = pandas.to_datetime(t_data["reportedTime"])
-        data.append(t_data)
+        data = pandas.concat([data, t_data])
     return data
         
