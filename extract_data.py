@@ -17,7 +17,8 @@ def extractor(t_delta):
            "stationID", "solarSystemID"]
 
     # prep to check status
-    ln = col.count()
+    # ln = col.count()
+    ln = 60000
     i = 0
     t_1 = datetime.now()
 
