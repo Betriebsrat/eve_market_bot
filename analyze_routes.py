@@ -22,7 +22,7 @@ def getTopSSID(data, limit):
         val_l.append(val.sum())
         print (i * 100.) / ln_ss, datetime.now() - t_1, "top SS IDs"
     max_l = heapq.nlargest(limit, val_l)
-    return [ss_ids[max_l.index(m)] for m in max_l]
+    return [ss_ids[val_l.index(m)] for m in max_l]
 
 
 def getPriceEstimate(data, t, bid):

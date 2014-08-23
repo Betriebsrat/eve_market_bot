@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import requests
 import StringIO
 import gzip
+import os
 
 
 def daterange(start_date, end_date):
@@ -14,7 +15,7 @@ def downloadDate(str_date):
 
     t_1 = datetime.now()
     url = "https://eve-central.com/dumps/"
-    results = requests.get(url + "%s.dump.gz" % str_date).read()
+    results = requests.get(url + "%s.dump.gz" % str_date).content
     inF = gzip.GzipFile(fileobj=StringIO.StringIO(results))
     outF = open("%s.dump" % str_date, "wb")
     outF.write(inF.read())
