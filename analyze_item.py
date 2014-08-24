@@ -3,6 +3,14 @@ import cPickle
 import pandas
 import numpy
 import heapq
+import csv
+
+
+def loadIds(csv_f):
+    """load ids"""
+
+    reader = csv.reader(open(csv_f, "rb"))
+    return [r for r in reader][1:]
 
 
 def getPriceEstimate(data):
@@ -16,6 +24,30 @@ def getVolume(data):
     """gets the volume for a data subset"""
 
     return data["volRemaining"].sum()
+
+
+def getProfits(finish, start):
+    """generates the profits for moving between the two points"""
+
+    return (finish - start) / start
+
+
+def tradeMat(data, th_ids, type_id, bid=0):
+    """generates a matrix of returns for each pair of trade hubs"""
+
+    t_1 = datetime.now()
+    s_data = data[data["typeID"] == type_id][data["bid"] == bid]
+    ln = len(th_ids)
+    res = numpy.zeros(shape=(ln, ln))
+    for i, r_i in enumerate(th_ids):
+        for j, r_j in enumerate(th_ids):
+            ss_data_i = s_data[s_data["solarSystemID"] == int(r_i[1])]
+            ss_data_j = s_data[s_data["solarSystemID"] == int(r_j[1])]
+            p_est_i = getPriceEstimate(ss_data_i)
+            p_est_j = getPriceEstimate(ss_data_j)
+            res[i, j] = getProfits(p_est_j, p_est_i)
+            print datetime.now() - t_1, ((i * ln + j) * 100.) / (ln * ln)
+    return res
 
 
 def optimalSS(data, type_id, vol_limit, station_limit, bid=0, mxmn=0):

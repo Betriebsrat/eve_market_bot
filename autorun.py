@@ -3,6 +3,7 @@ from extract_data import *
 from analyze_routes import *
 from dump_scraper import *
 import time
+import csv
 
 
 def dumpRoutes(routes, o_file):
