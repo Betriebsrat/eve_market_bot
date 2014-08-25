@@ -1,43 +1,47 @@
 from datetime import datetime, timedelta
-from extract_data import *
-from analyze_routes import *
-from dump_scraper import *
-import time
-import csv
+from eve_market_scraper import *
+from analyze_data import *
+import pandas
 
 
-def dumpRoutes(routes, o_file):
-    """dumps the routes in a csv"""
+def fullRun(region_ids, type_ids, base_f):
+    """keeps updated records of profitable opportunities"""
 
-    o_data = open(o_file, "wb")
-    writer = csv.writer(o_data)
-    writer.writerow(["start", "finish", "type", "profit"])
-    for s in routes:
-        for f in routes[s]:
-            for k in routes[s][f]:
-                writer.writerow([s, f, k, routes[s][f][k]])
-    o_data.close()
-
-
-def fullRun(s_date, t_sleep, vol_limit, ss_limit, route_limit, good_limit, o_file):
-    """does the autorun"""
-
-    t_1 = datetime.now()
-    i = 0
     while True:
         c_date = datetime.now()
-        downloadDateRange(s_date, c_date)
-        print "dump downloaded", datetime.now() - t_1, i
-        data = dataDumpExtractor(c_date, c_date + timedelta(days=1))
-        print "data loaded", datetime.now() - t_1, i
-        if i % 7 == 0:
-            ss_ids = getTopSSID(data, ss_limit)
-            print "new ssids loaded", datetime.now() - t_1, i
-        routes = compareRoutes(data, route_limit, good_limit, vol_limit, ss_ids)
-        print "new routes loaded", dateime.now() - t_1, i
-        dumpRoutes(routes, o_file)
-        print "routes stored", datetime.now() - t_1, i
-        i += 1
-        time.sleep(79200)
-
-        
+        c_str_date = c_date.strftime("%Y-%m-%d")
+        downloadData(region_ids, type_ids, "%s.csv" % c_str_date, "Slutsky Danneskjold", 6, 2)
+        c_data = joinNewData(base_f, "%s.csv" % c_str_date)
+        # get prev dates
+        m_date = c_date + timedelta(-30)
+        w_date = c_date + timedelta(-7)
+        d_date = c_date + timedelta(-1)
+        # get return matrices
+        m_ret_mat_l = buildReturnsMatrix(c_data, region_ids, type_ids, m_date)
+        w_ret_mat_l = buildReturnsMatrix(c_data, region_ids, type_ids, w_date)
+        d_ret_mat_l = buildReturnsMatrix(c_data, region_ids, type_ids, d_date)
+        for ret in [0.5, 0.75, 0.9]:
+            m_routes = bestRoutes(c_data, m_ret_mat_l, region_ids, type_ids,
+                                  1000000000, ret, m_date)
+            w_routes = bestRoutes(c_data, w_ret_mat_l, region_ids, type_ids,
+                                  100000000, ret, w_date)
+            d_routes = bestRoutes(c_data, d_ret_mat_l, region_ids, type_ids,
+                                  10000000, ret, d_date)
+            # write monthly routes
+            m_output = open("%d_%s_m_routes.csv" % (ret, c_str_date), "wb")
+            writer = csv.writer(m_output)
+            for route in m_routes:
+                writer.writerow(route)
+            m_output.close()
+            # write monthly routes
+            w_output = open("%d_%s_w_routes.csv" % (ret, c_str_date), "wb")
+            writer = csv.writer(w_output)
+            for route in w_routes:
+                writer.writerow(route)
+            w_output.close()
+            # write monthly routes
+            d_output = open("%d_%s_d_routes.csv" % (ret, c_str_date), "wb")
+            writer = csv.writer(d_output)
+            for route in d_routes:
+                writer.writerow(route)
+            d_output.close()
