@@ -37,7 +37,7 @@ def buildReturnsMatrix(data, region_l, type_l, date_limit):
     return res_l
 
 
-def bestRoutes(data, ret_l, region_l, type_l, val_limit, ret_limit, date_limit):
+def bestRoutes(data, ret_l, region_l, type_l, val_limit, vol_limit, ret_limit, date_limit):
     """gets the best routes given some limits"""
 
     ln_type = len(type_l)
@@ -58,8 +58,12 @@ def bestRoutes(data, ret_l, region_l, type_l, val_limit, ret_limit, date_limit):
                 s_val = s_val.sum()
                 e_val = e_data["avgPrice"] * e_data["volume"]
                 e_val = e_val.sum()
-                if s_val > val_limit and e_val > val_limit and ret_v > ret_limit:
-                    res_l.append([t, r_i, r_j, ret_v])
+                s_vol = s_data["volume"].sum()
+                e_vol = e_data["volume"].sum()
+                if (s_val > val_limit and e_val > val_limit and
+                    ret_v > ret_limit and s_vol > vol_limit and
+                    e_vol > vol_limit):
+                        res_l.append([t, r_i, r_j, ret_v])
         print datetime.now() - t_1, (k * 100.) / ln_type
         k += 1
     return res_l
