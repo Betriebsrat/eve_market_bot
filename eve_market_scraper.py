@@ -23,7 +23,8 @@ def downloadData(region_l, type_l, o_file, u_name, t_sleep, day_limit=30):
             res = requests.post(base_url, {"char_name": u_name,
                                            "region_ids": r,
                                            "type_ids": t_str})
-            data_str += res.text
+            if "Error: you must include" not in res.text:
+                data_str += res.text
             print datetime.now() - t_1, ((j * chk + i) * 100.) / (ln_r * chk)
             time.sleep(t_sleep)
         s_t_l = type_l[(chk * stp):]
@@ -32,7 +33,8 @@ def downloadData(region_l, type_l, o_file, u_name, t_sleep, day_limit=30):
                                        "region_ids": r,
                                        "type_ids": t_str,
                                        "days": day_limit})
-        data_str += res.text
+        if "Error: you must include" not in res.text:
+            data_str += res.text
     o_data = open(o_file, "wb")
     o_data.write(data_str)
     o_data.close()

@@ -37,7 +37,7 @@ def buildReturnsMatrix(data, region_l, type_l, date_limit):
     return res_l
 
 
-def bestRoutes(data, ret_l, region_l, type_l, val_limit, vol_limit, ret_limit, date_limit):
+def bestRoutes(data, ret_l, region_l, type_l, val_limit, vol_limit, ret_limit, date_limit, loc_id="n_0"):
     """gets the best routes given some limits"""
 
     ln_type = len(type_l)
@@ -64,6 +64,6 @@ def bestRoutes(data, ret_l, region_l, type_l, val_limit, vol_limit, ret_limit, d
                     ret_v > ret_limit and s_vol > vol_limit and
                     e_vol > vol_limit):
                         res_l.append([t, r_i, r_j, ret_v])
-        print datetime.now() - t_1, (k * 100.) / ln_type
+        print datetime.now() - t_1, (k * 100.) / ln_type, loc_id
         k += 1
     return res_l
